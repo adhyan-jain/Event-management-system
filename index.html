@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Management</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 1.5rem; /* Increased padding */
+            text-align: center;
+            font-size: 1.2rem; /* Increased font size */
+        }
+        nav a {
+            color: #fff;
+            margin: 0 1rem;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        main {
+            padding: 2rem;
+        }
+        section {
+            display: none;
+        }
+        section.active {
+            display: block;
+        }
+        h1 {
+            color: #333;
+            font-size: 2.5rem; /* Increased font size */
+        }
+        h2 {
+            color: #333;
+        }
+        form {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+        form input, form textarea, form button {
+            width: 100%;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        form button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        form button:hover {
+            background-color: #555;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        ul li {
+            background-color: #fff;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        ul li img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        ul li h3 {
+            margin-top: 0;
+        }
+        .delete-button, .update-button {
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin-right: 0.5rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .update-button {
+            background-color: #3498db;
+        }
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+        .update-button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" id="home-link">Home</a>
+        <a href="#" id="events-link">Events</a>
+        <a href="#" id="add-event-link">Add Event</a>
+        <a href="#" id="logout-link" class="hidden">Logout</a>
+        <a href="#" id="login-link">Login</a>
+    </nav>
+
+    <main>
+        <section id="home" class="active">
+            <h1>Welcome to the Event Management System</h1>
+            <h2>Upcoming Events</h2>
+            <ul id="event-titles"></ul>
+        </section>
+
+        <section id="events" class="hidden">
+            <h2>Events</h2>
+            <input type="date" id="date-picker">
+            <ul id="events-list"></ul>
+        </section>
+
+        <section id="add-event" class="hidden">
+            <h2>Add Event</h2>
+            <form id="add-event-form">
+                <input type="text" id="event-name" placeholder="Event Name" required>
+                <input type="date" id="event-date" required>
+                <input type="time" id="event-time" required>
+                <input type="text" id="event-venue" placeholder="Venue" required>
+                <input type="text" id="event-club" placeholder="Organizing Club" required>
+                <textarea id="event-description" placeholder="Description" required></textarea>
+                <input type="file" id="event-photo" accept="image/*">
+                <button type="submit">Add Event</button>
+            </form>
+        </section>
+
+        <section id="update-event" class="hidden">
+            <h2>Update Event</h2>
+            <form id="update-event-form">
+                <input type="text" id="update-event-name" placeholder="Event Name" required>
+                <input type="date" id="update-event-date" required>
+                <input type="time" id="update-event-time" required>
+                <input type="text" id="update-event-venue" placeholder="Venue" required>
+                <input type="text" id="update-event-club" placeholder="Organizing Club" required>
+                <textarea id="update-event-description" placeholder="Description" required></textarea>
+                <input type="file" id="update-event-photo" accept="image/*">
+                <button type="submit">Update Event</button>
+                <button type="button" id="delete-event-button" class="delete-button">Delete Event</button>
+            </form>
+        </section>
+
+        <section id="login" class="hidden">
+            <h2 style="text-align:center">Login</h2>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        let isAuthenticated = false;
+        let currentEvent = null;
+        const users = { admin: 'password', user1: 'password1', user2: 'password2' };
+
+        function showSection(sectionId) {
+            document.querySelectorAll('main section').forEach(section => section.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function updateNavLinks() {
+            document.getElementById('logout-link').style.display = isAuthenticated ? 'inline' : 'none';
+            document.getElementById('login-link').style.display = isAuthenticated ? 'none' : 'inline';
+        }
+
+        document.getElementById('home-link').addEventListener('click', () => showSection('home'));
+        document.getElementById('events-link').addEventListener('click', () => showSection('events'));
+        document.getElementById('add-event-link').addEventListener('click', () => isAuthenticated ? showSection('add-event') : alert('You must be logged in to add an event.') && showSection('login'));
+        document.getElementById('login-link').addEventListener('click', () => showSection('login'));
+
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (users[username] && users[username] === password) {
+                isAuthenticated = true;
+                localStorage.setItem('isAuthenticated', 'true');
+                alert('Login successful!');
+                updateNavLinks();
+                showSection('home');
+            } else {
+                alert('Invalid username or password.');
+            }
+        });
+
+        document.getElementById('logout-link').addEventListener('click', function(event) {
+            event.preventDefault();
+            isAuthenticated = false;
+            localStorage.setItem('isAuthenticated', 'false');
+            alert('Logged out successfully!');
+            updateNavLinks();
+            showSection('login');
+        });
+
+        document.getElementById('add-event-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            if (!isAuthenticated) {
+                alert('You must be logged in to add an event.');
+                return;
+            }
+
+            const eventName = document.getElementById('event-name').value;
+            const eventDate = document.getElementById('event-date').value;
+            const eventTime = document.getElementById('event-time').value;
+            const eventVenue = document.getElementById('event-venue').value;
+            const eventClub = document.getElementById('event-club').value;
+            const eventDescription = document.getElementById('event-description').value;
+            const eventPhoto = document.getElementById('event-photo').files[0];
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const eventsList = document.getElementById('events-list');
+                const eventTitles = document.getElementById('event-titles');
+                const newEvent = document.createElement('li');
+                newEvent.setAttribute('data-date', eventDate);
+                newEvent.classList.add('event');
+                newEvent.innerHTML = `
+                    <h3>${eventName}</h3>
+                    <img src="${e.target.result}" alt="${eventName}">
+                    <p>Date: ${eventDate}</p>
+                    <p>Time: ${eventTime}</p>
+                    <p>Venue: ${eventVenue}</p>
+                    <p>Organizing Club: ${eventClub}</p>
+                    <p>Description: ${eventDescription}</p>
+                    <button class="update-button">Update</button>
+                `;
+                eventsList.appendChild(newEvent);
+
+                newEvent.querySelector('.update-button').addEventListener('click', () => {
+                    if (isAuthenticated) {
+                        currentEvent = newEvent;
+                        document.getElementById('update-event-name').value = eventName;
+                        document.getElementById('update-event-date').value = eventDate;
+                        document.getElementById('update-event-time').value = eventTime;
+                        document.getElementById('update-event-venue').value = eventVenue;
+                        document.getElementById('update-event-club').value = eventClub;
+                        document.getElementById('update-event-description').value = eventDescription;
+                        showSection('update-event');
+                    } else {
+                        alert('You must be logged in to update an event.');
+                        showSection('login');
+                    }
+                });
+
+                const newTitle = document.createElement('li');
+                newTitle.textContent = eventName;
+                eventTitles.appendChild(newTitle);
+
+                alert('Event added successfully!');
+            };
+            reader.readAsDataURL(eventPhoto);
+
+            document.getElementById('add-event-form').reset();
+        });
+
+        document.getElementById('update-event-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            if (!isAuthenticated) {
+                alert('You must be logged in to update an event.');
+                return;
+            }
+
+            const eventName = document.getElementById('update-event-name').value;
+            const eventDate = document.getElementById('update-event-date').value;
+            const eventTime = document.getElementById('update-event-time').value;
+            const eventVenue = document.getElementById('update-event-venue').value;
+            const eventClub = document.getElementById('update-event-club').value;
+            const eventDescription = document.getElementById('update-event-description').value;
+            const eventPhoto = document.getElementById('update-event-photo').files[0];
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentEvent.querySelector('h3').textContent = eventName;
+                currentEvent.querySelector('img').src = e.target.result;
+                currentEvent.querySelector('p:nth-of-type(1)').textContent = `Date: ${eventDate}`;
+                currentEvent.querySelector('p:nth-of-type(2)').textContent = `Time: ${eventTime}`;
+                currentEvent.querySelector('p:nth-of-type(3)').textContent = `Venue: ${eventVenue}`;
+                currentEvent.querySelector('p:nth-of-type(4)').textContent = `Organizing Club: ${eventClub}`;
+                currentEvent.querySelector('p:nth-of-type(5)').textContent = `Description: ${eventDescription}`;
+
+                alert('Event updated successfully!');
+                showSection('events');
+            };
+            reader.readAsDataURL(eventPhoto);
+
+            document.getElementById('update-event-form').reset();
+        });
+
+        document.getElementById('delete-event-button').addEventListener('click', function() {
+            if (currentEvent) {
+                const eventsList = document.getElementById('events-list');
+                const eventTitles = document.getElementById('event-titles');
+                eventsList.removeChild(currentEvent);
+                const eventTitle = Array.from(eventTitles.children).find(title => title.textContent === currentEvent.querySelector('h3').textContent);
+                eventTitles.removeChild(eventTitle);
+                alert('Event deleted successfully!');
+                showSection('events');
+            }
+        });
+
+        function displayEvents() {
+            const eventsList = document.getElementById('events-list');
+            const eventTitles = document.getElementById('event-titles');
+            eventsList.innerHTML = '';
+            eventTitles.innerHTML = '';
+
+            const events = [
+                {
+                    name: 'Tech Talk',
+                    date: '2023-10-01',
+                    time: '10:00',
+                    venue: 'Auditorium',
+                    club: 'Tech Club',
+                    description: 'A talk on the latest in technology.',
+                    photo: 'path/to/photo1.jpg'
+                },
+                {
+                    name: 'Art Exhibition',
+                    date: '2023-10-05',
+                    time: '14:00',
+                    venue: 'Art Gallery',
+                    club: 'Art Club',
+                    description: 'An exhibition showcasing student artwork.',
+                    photo: 'path/to/photo2.jpg'
+                }
+            ];
+
+            events.forEach(event => {
+                const newEvent = document.createElement('li');
+                newEvent.setAttribute('data-date', event.date);
+                newEvent.classList.add('event');
+                newEvent.innerHTML = `
+                    <h3>${event.name}</h3>
+                    <img src="${event.photo}" alt="${event.name}">
+                    <p>Date: ${event.date}</p>
+                    <p>Time: ${event.time}</p>
+                    <p>Venue: ${event.venue}</p>
+                    <p>Organizing Club: ${event.club}</p>
+                    <p>Description: ${event.description}</p>
+                    <button class="update-button">Update</button>
+                `;
+                eventsList.appendChild(newEvent);
+
+                newEvent.querySelector('.update-button').addEventListener('click', () => {
+                    if (isAuthenticated) {
+                        currentEvent = newEvent;
+                        document.getElementById('update-event-name').value = event.name;
+                        document.getElementById('update-event-date').value = event.date;
+                        document.getElementById('update-event-time').value = event.time;
+                        document.getElementById('update-event-venue').value = event.venue;
+                        document.getElementById('update-event-club').value = event.club;
+                        document.getElementById('update-event-description').value = event.description;
+                        showSection('update-event');
+                    } else {
+                        alert('You must be logged in to update an event.');
+                        showSection('login');
+                    }
+                });
+
+                const newTitle = document.createElement('li');
+                newTitle.textContent = event.name;
+                eventTitles.appendChild(newTitle);
+            });
+        }
+
+        displayEvents();
+        if (!isAuthenticated) showSection('login');
+        updateNavLinks();
+    </script>
+</body>
