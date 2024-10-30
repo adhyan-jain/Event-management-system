@@ -12,9 +12,9 @@ To use this application, simply open the index.html file in a web browser. You c
 Login Credentials
 The application comes with three pre-defined users:
 
-admin: password
-user1: password1
-user2: password2
+admin: password;
+user1: password1;
+user2: password2;
 You can use these credentials to log in and test the application.
 
 Technical Details
@@ -24,9 +24,9 @@ License
 This software is licensed under the MIT License.
 
 Author
-Adhyan Jain
-Kshitij Khandelwal
-Kshitij Manikshete
+Adhyan Jain;
+Kshitij Khandelwal;
+Kshitij Manikshete;
 
 Acknowledgments
 This application was built using various online resources and tutorials.
