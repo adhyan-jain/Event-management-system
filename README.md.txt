@@ -18,7 +18,7 @@ user2: password2
 You can use these credentials to log in and test the application.
 
 Technical Details
-This application uses HTML, CSS, and JavaScript to create a dynamic and interactive user interface. It also uses local storage to store user authentication information.
+This application uses HTMLto create a dynamic and interactive user interface. It also uses local storage to store user authentication information.
 
 License
 This software is licensed under the MIT License.
@@ -29,6 +29,4 @@ Kshitij Khandelwal
 Kshitij Manikshete
 
 Acknowledgments
-This application was built using various online resources and tutorials. Special thanks to [list any resources or individuals who contributed to the project].
-
-You can copy and paste this into a README file for your index.html file. Let me know if you need any further assistance!
+This application was built using various online resources and tutorials.
